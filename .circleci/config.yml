@@ -57,7 +57,6 @@ jobs:
             cd frontend
             npm i
             npm run build
-            
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build
@@ -75,7 +74,6 @@ jobs:
             cd backend
             npm i
             npm run build
-            
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
@@ -176,61 +174,10 @@ jobs:
       - persist_to_workspace:
           root: ~/
           paths:
-<<<<<<< HEAD
-            - project/.circleci/ansible/inventory.txt
-      # Here's where you will add some code to rollback on failure      
-deploy-infrastructure:
-    docker:
-      - image: amazon/aws-cli # Docker image here that supports AWS CLI
-    steps:
-      - checkout
-      - run: yum -y install tar gzip jq git
-      - run:
-          name: Ensure back-end infrastructure exists
-          command: |
-            aws cloudformation deploy \
-              --template-file .circleci/files/backend.yml \
-              --tags project=udapeople-${CIRCLE_WORKFLOW_ID:0:5} \
-              --stack-name backend-stack-${CIRCLE_WORKFLOW_ID:0:5} \
-              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:5} 
-             
-      - run:
-          name: Ensure front-end infrastructure exist
-          command: |
-            aws cloudformation deploy \
-              --template-file .circleci/files/frontend.yml \
-              --tags project=udapeople-${CIRCLE_WORKFLOW_ID:0:5}  \
-              --stack-name frontend-stack-${CIRCLE_WORKFLOW_ID:0:5} \
-              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:5} \
-              
-      - run:
-          name: Add back-end ip to ansible inventory
-          command: |
-            aws ec2 describe-instances \
-            --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:5}" \
-            --output text >> ~/project/.circleci/ansible/inventory.txt
-            cat .circleci/ansible/inventory.txt
-=======
             - project/.circleci/ansible/inventory.txt    
       # Here's where you will add some code to rollback on failure
       - destroy-environment
->>>>>>> dfbc3ace87cf8a0c24a65f0d8cda66f3aa43eba6
 
-            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
-                --request PUT \
-                --data `aws ec2 describe-instances \
-                  --query 'Reservations[*].Instances[*].PublicIpAddress' \
-                  --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:5}" \
-                  --output text` \
-                https://api.memstash.io/values/backendip
-            
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - project/.circleci/ansible/inventory.txt    
-      # Here's where you will add some code to rollback on failure
-      - destroy-environment
   configure-infrastructure:
     docker:
       - image: python:3.7-alpine3.11
@@ -268,10 +215,7 @@ deploy-infrastructure:
             ansible-playbook -i inventory.txt configure-server.yml
       # Here's where you will add some code to rollback on failure
       - destroy-environment
-<<<<<<< HEAD
-=======
   
->>>>>>> dfbc3ace87cf8a0c24a65f0d8cda66f3aa43eba6
   run-migrations:
     docker:
       - image: circleci/node:13.8.0 # Docker image here that supports NodeJS
