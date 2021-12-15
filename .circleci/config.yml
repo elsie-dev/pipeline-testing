@@ -184,7 +184,7 @@ jobs:
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints: ['9f:ea:a8:35:4b:fe:5b:a1:77:fd:43:10:51:22:85:2d']
+          fingerprints: ['c7:34:fc:09:bd:ed:55:33:e4:d0:1a:25:f7:1a:40:06']
       - attach_workspace:
           at: ~/
           
@@ -257,6 +257,57 @@ jobs:
       - revert-migrations
       - destroy-environment
 
+  deploy-frontend:
+    docker:
+      - image: python:3.7-alpine3.11 # Docker image here that supports AWS CLI
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/
+          
+      - run:
+          name: Install AWS CLI dependencies
+          command: |
+            apk add --update tar gzip ansible nodejs npm curl
+            pip install awscli
+      - run:
+          name: Install dependencies
+          command: |
+            cd frontend
+            npm i
+      - run:
+          name: Get backend url
+          command: |
+            
+            # BACKEND_IP=$(aws ec2 describe-instances \
+            #   --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            #   --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:5}" ) 
+
+            BACKEND_IP=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" \
+              --request GET https://api.memstash.io/values/backendip)
+
+            export API_URL="http://${BACKEND_IP}:3030"
+
+            
+            echo ENVIRONMENT=production > "frontend/.env"
+            echo NODE_ENV=production >> "frontend/.env"
+            echo API_URL=$API_URL >> "frontend/.env"
+           
+            echo "${API_URL}"
+      - run:
+          name: Deploy frontend objects
+          command: |
+            echo ENVIRONMENT=production >> frontend/.env
+            echo NODE_ENV=production >> frontend/.env
+            cd frontend
+            npm audit fix --audit-level=critical 
+            npm install
+            npm run build
+            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:5}".tar.gz dist
+            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:5} --recursive
+      # Here's where you will add some code to rollback on failure 
+      - revert-migrations
+      - destroy-environment
   deploy-frontend:
     docker:
       - image: python:3.7-alpine3.11 # Docker image here that supports AWS CLI
@@ -427,8 +478,8 @@ workflows:
           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
-      # - run-migrations:
-      #     requires: [configure-infrastructure]
+      - run-migrations:
+          requires: [configure-infrastructure]
       # - deploy-frontend:
       #     requires: [run-migrations]
       # - deploy-backend:
