@@ -181,11 +181,7 @@ jobs:
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints: ['b1:65:4d:39:16:98:e3:01:db:36:58:be:95:2b:f0:f1
-
-
-
-']
+          fingerprints: ['1b:5d:b9:2f:d8:8b:a4:62:0e:2b:37:b9:18:62:20:45']
       - attach_workspace:
           at: ~/
 
@@ -215,7 +211,7 @@ jobs:
             cat inventory.txt
             ansible-playbook -i inventory.txt configure-server.yml
       # Here's where you will add some code to rollback on failure
-      - destroy-environment
+      # - destroy-environment
 
   run-migrations:
     docker:
@@ -316,8 +312,7 @@ jobs:
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints: ['b1:65:4d:39:16:98:e3:01:db:36:58:be:95:2b:f0:f1
-
+          fingerprints: ['1b:5d:b9:2f:d8:8b:a4:62:0e:2b:37:b9:18:62:20:45
 
 
 
