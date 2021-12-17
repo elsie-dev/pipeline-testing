@@ -26,7 +26,7 @@ commands:
     steps:
       - restore_cache:
           key: backend-build
-          
+
       - run:
           name: Revert migrations
           when: on_fail
@@ -41,7 +41,7 @@ commands:
               npm run migrations:revert #revert the successful migration
               echo "Migration reverted"
             else
-              echo "Migration revert was unsuccessful" 
+              echo "Migration revert was unsuccessful"
             fi
 jobs:
   build-frontend:
@@ -90,7 +90,7 @@ jobs:
           command: |
             cd frontend
             npm run test
-                
+
   test-backend:
     docker:
       - image: circleci/node:13.8.0
@@ -117,7 +117,7 @@ jobs:
             cd frontend
             npm i
             npm audit fix --audit-level=critical --force
-  
+
   scan-backend:
     docker:
       - image: circleci/node:13.8.0
@@ -143,8 +143,8 @@ jobs:
               --template-file .circleci/files/backend.yml \
               --tags project=udapeople-${CIRCLE_WORKFLOW_ID:0:5} \
               --stack-name backend-stack-${CIRCLE_WORKFLOW_ID:0:5} \
-              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:5} 
-             
+              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:5}
+
       - run:
           name: Ensure front-end infrastructure exist
           command: |
@@ -153,7 +153,7 @@ jobs:
               --tags project=udapeople-${CIRCLE_WORKFLOW_ID:0:5}  \
               --stack-name frontend-stack-${CIRCLE_WORKFLOW_ID:0:5} \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:5} \
-              
+
       - run:
           name: Add back-end ip to ansible inventory
           command: |
@@ -169,11 +169,11 @@ jobs:
                   --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:5}" \
                   --output text` \
                 https://api.memstash.io/values/backendip
-            
+
       - persist_to_workspace:
           root: ~/
           paths:
-            - project/.circleci/ansible/inventory.txt    
+            - project/.circleci/ansible/inventory.txt
       - destroy-environment
   configure-infrastructure:
     docker:
@@ -186,7 +186,7 @@ jobs:
 ']
       - attach_workspace:
           at: ~/
-          
+
       - run:
           name: Install dependencies
           command: |
@@ -214,7 +214,7 @@ jobs:
             ansible-playbook -i inventory.txt configure-server.yml
       # Here's where you will add some code to rollback on failure
       - destroy-environment
-  
+
   run-migrations:
     docker:
       - image: circleci/node:13.8.0 # Docker image here that supports NodeJS
@@ -222,7 +222,7 @@ jobs:
       - checkout
       - attach_workspace:
           at: ~/
-          
+
       - restore_cache:
           keys: [backend-build]
       - run:
@@ -237,7 +237,7 @@ jobs:
       - run:
           name: Run migrations
           command: |
-            
+
             cd backend
             npm run migrations:revert
             npm run migrations > migrations_dump.log
@@ -253,8 +253,8 @@ jobs:
               --request PUT --data "1" \
               https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:5}
       # Here's where you will add some code to rollback on failure
-      - revert-migrations
-      - destroy-environment
+      # - revert-migrations
+      # - destroy-environment
 
   deploy-frontend:
     docker:
@@ -263,7 +263,7 @@ jobs:
       - checkout
       - attach_workspace:
           at: ~/
-          
+
       - run:
           name: Install AWS CLI dependencies
           command: |
@@ -277,21 +277,21 @@ jobs:
       - run:
           name: Get backend url
           command: |
-            
+
             # BACKEND_IP=$(aws ec2 describe-instances \
             #   --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            #   --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:5}" ) 
+            #   --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:5}" )
 
             BACKEND_IP=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" \
               --request GET https://api.memstash.io/values/backendip)
 
             export API_URL="http://${BACKEND_IP}:3030"
 
-            
+
             echo ENVIRONMENT=production > "frontend/.env"
             echo NODE_ENV=production >> "frontend/.env"
             echo API_URL=$API_URL >> "frontend/.env"
-           
+
             echo "${API_URL}"
       - run:
           name: Deploy frontend objects
@@ -299,14 +299,14 @@ jobs:
             echo ENVIRONMENT=production >> frontend/.env
             echo NODE_ENV=production >> frontend/.env
             cd frontend
-            npm audit fix --audit-level=critical 
+            npm audit fix --audit-level=critical
             npm install
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:5}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:5} --recursive
-      # Here's where you will add some code to rollback on failure 
+      # Here's where you will add some code to rollback on failure
       - revert-migrations
-      - destroy-environment  
+      - destroy-environment
 
   deploy-backend:
     docker:
@@ -322,7 +322,7 @@ jobs:
       # attach workspace
       - attach_workspace:
           at: ~/
-      
+
       - run:
           name: Install dependencies
           command: |
@@ -333,7 +333,7 @@ jobs:
           name: Deploy backend
           no_output_timeout: 30m
           command: |
-      
+
             echo ENVIRONMENT=production >> "backend/.env"
             echo TYPEORM_CONNECTION=postgres >> "backend/.env"
             echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
@@ -359,15 +359,15 @@ jobs:
       - destroy-environment
 
   smoke-test:
-    docker: 
+    docker:
       #Lightweight Docker image
-      - image: python:3.7-alpine3.11 
+      - image: python:3.7-alpine3.11
     steps:
       # Checkout code from git
       - checkout
       - attach_workspace:
           at: ~/
-          
+
       - run:
           name: Install dependencies
           command: |
@@ -376,11 +376,11 @@ jobs:
       - run:
           name: Backend smoke test.
           command: |
-            #Fetch and prepare the BACKEND_IP env var 
+            #Fetch and prepare the BACKEND_IP env var
 
             # BACKEND_IP=$(aws ec2 describe-instances \
             #   --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:5}" \
-            #   --query "Reservations[*].Instances[0].PublicIpAddress")    
+            #   --query "Reservations[*].Instances[0].PublicIpAddress")
 
             # if curl -v http://${BACKEND_IP}:3030/api/status | grep "ok"
             # then
@@ -401,7 +401,7 @@ jobs:
           command: |
             URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:5}.s3-website-us-east-1.amazonaws.com"
             echo $URL
-            if curl -s ${URL} | grep "Welcome"  
+            if curl -s ${URL} | grep "Welcome"
             then
               echo "Frontend Smoke test successful."
               return 0
@@ -409,9 +409,9 @@ jobs:
               echo "Frontend Smoke test unsuccessful."
               return 1
             fi
-      #Here's where you will add some code to rollback on failure 
+      #Here's where you will add some code to rollback on failure
       - revert-migrations
-      - destroy-environment 
+      - destroy-environment
 
 workflows:
   Deployment:
