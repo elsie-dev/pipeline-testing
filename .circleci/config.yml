@@ -162,13 +162,13 @@ jobs:
             --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:5}" \
             --output text >> ~/project/.circleci/ansible/inventory.txt
             cat .circleci/ansible/inventory.txt
-            curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
-                --request PUT \
-                --data `aws ec2 describe-instances \
-                  --query 'Reservations[*].Instances[*].PublicIpAddress' \
-                  --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:5}" \
-                  --output text` \
-                https://api.memstash.io/values/backendip
+            # curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" \
+            #     --request PUT \
+            #     --data `aws ec2 describe-instances \
+            #       --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            #       --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:5}" \
+            #       --output text` \
+            #     https://api.memstash.io/values/backendip
 
       - persist_to_workspace:
           root: ~/
