@@ -6,7 +6,7 @@ Parameters:
     Description: Unique identifier.
     Type: String
     Default: ${CIRCLE_WORKFLOW_ID:5}
-    
+
 
 Resources:
   InstanceSecurityGroup:
@@ -23,7 +23,7 @@ Resources:
           FromPort: 3030
           ToPort: 3030
           CidrIp: 0.0.0.0/0
-        
+
 
   EC2Instance:
     Type: AWS::EC2::Instance
@@ -31,9 +31,9 @@ Resources:
       InstanceType: t2.micro
       SecurityGroups:
         - Ref: InstanceSecurityGroup
-      KeyName: udacity
-    
-      ImageId: ami-0ed9277fb7eb570c9  
+      KeyName: projectuda
+
+      ImageId: ami-0ed9277fb7eb570c9
       Tags:
         - Key: Name
           Value: !Sub "backend-${ID}"
